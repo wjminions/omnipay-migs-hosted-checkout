@@ -1,0 +1,31 @@
+{
+  "name": "wjminions/omnipay-migs-hosted-checkout",
+  "type": "library",
+  "description": "MigsHostedCheckout gateway for Omnipay payment processing library",
+  "keywords": [
+    "migs-hosted-checkout",
+    "gateway",
+    "merchant",
+    "omnipay",
+    "pay",
+    "payment",
+    "purchase"
+  ],
+  "homepage": "https://github.com/wjminons/omnipay-migs-hosted-checkout",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "wjminions",
+      "email": "wjminions@gmail.com",
+      "homepage": "https://github.com/wjminions/omnipay-migs-hosted-checkout"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Omnipay\\MigsHostedCheckout\\": "src/"
+    }
+  },
+  "require": {
+    "omnipay/common": "~2.0"
+  }
+}
