@@ -23,10 +23,28 @@ class HostedPurchaseRequest extends AbstractHostedRequest
         $this->validateData();
 
         $data = array (
+            'certificateVerifyPeer' => false,
+            'certificateVerifyHost' => 0,
+            'gatewayUrl' => $this->getEndpoint('pay'),
+            'merchantId' => $this->getMerchantId(),
+            'apiUsername' => $this->getApiUsername(),
+            'password' => $this->getPassword(),
+            'debug' => false,
+            'version' => $this->getVersion(),
+            'proxyServer' => '',
+            'proxyAuth' => '',
+            'proxyCurlOption' => '',
+            'proxyCurlValue' => '',
+            'certificatePath' => '',
+
             //商户订单号
             'order_id'        => $this->getOrderId(),
             //交易金额，单位分
-            'amount'         => $this->getAmount()
+            'amount'         => $this->getAmount(),
+            'customer_receipt_email' => $this->getCustomerReceiptEmail(),
+            'checkout_method' => $this->getCheckoutMethod(),
+            'currency' => $this->getCurrency(),
+            'return_url' => $this->getReturnUrl()
         );
 
         return $data;
@@ -36,8 +54,16 @@ class HostedPurchaseRequest extends AbstractHostedRequest
     private function validateData()
     {
         $this->validate(
+            'merchantId',
+            'apiUsername',
+            'password',
+            'version',
             'order_id',
-            'amount'
+            'amount',
+            'customer_receipt_email',
+            'currency',
+            'checkout_method',
+            'return_url'
         );
     }
 

@@ -3,76 +3,128 @@ namespace Omnipay\MigsHostedCheckout;
 
 /**
  * Class Helper
+ *
  * @package Omnipay\MigsHostedCheckout
  */
 class Helper
 {
-    /**
-     * 21000 App Store不能读取你提供的JSON对象
-     * 21002 receipt-data域的数据有问题
-     * 21003 receipt无法通过验证
-     * 21004 提供的shared secret不匹配你账号中的shared secret
-     * 21005 receipt服务器当前不可用
-     * 21006 receipt合法，但是订阅已过期。服务器接收到这个状态码时，receipt数据仍然会解码并一起发送
-     * 21007 receipt是Sandbox receipt，但却发送至生产系统的验证服务
-     * 21008 receipt是生产receipt，但却发送至Sandbox环境的验证服务
-     */
-    public static function sendHttpRequest($receipt_data, $url)
+    public static function parse_from_nvp($string)
     {
-        //小票信息
-        $POSTFIELDS = array("receipt-data" => $receipt_data);
-        $POSTFIELDS = json_encode($POSTFIELDS);
+        $array     = array();
+        if (strlen($string) != 0) {
+            $pairArray = explode("&", $string);
+            foreach ($pairArray as $pair) {
+                $param                       = explode("=", $pair);
+                $array[urldecode($param[0])] = urldecode($param[1]);
+            }
+        }
 
-        //简单的curl
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $POSTFIELDS);
-        $result = curl_exec($ch);
+        return $array;
+    }
+
+    // Send transaction to payment server
+    public static function SendTransaction($gatewayUrl, $data, $request)
+    {
+        // initialise cURL object/options
+        $ch = curl_init();
+
+        // configure cURL proxy options by calling this function
+        // If proxy server is defined, set cURL option
+        if ($data['proxyServer'] != "") {
+            curl_setopt($ch, CURLOPT_PROXY, $data['proxyServer']);
+            curl_setopt($ch, $data['proxyCurlOption'], $data['proxyCurlValue']);
+        }
+
+        // If proxy authentication is defined, set cURL option
+        if ($data['proxyAuth'] != "")
+            curl_setopt($ch, CURLOPT_PROXYUSERPWD, $data['proxyAuth']);
+
+        // configure cURL certificate verification settings by calling this function
+        // if user has given a path to a certificate bundle, set cURL object to check against them
+        if ($data['certificatePath'] != "") {
+            curl_setopt($ch, CURLOPT_CAINFO, $data['certificatePath']);
+        }
+
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $data['certificateVerifyPeer']);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $data['certificateVerifyHost']);
+
+        // [Snippet] howToPost - start
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+        // [Snippet] howToPost - end
+
+        // [Snippet] howToSetURL - start
+        curl_setopt($ch, CURLOPT_URL, $gatewayUrl);
+        // [Snippet] howToSetURL - end
+
+        // [Snippet] howToSetHeaders - start
+        // set the content length HTTP header
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Length: " . strlen($request)));
+
+        // set the charset to UTF-8 (requirement of payment server)
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/x-www-form-urlencoded;charset=UTF-8"));
+        // [Snippet] howToSetHeaders - end
+
+        // tells cURL to return the result if successful, of FALSE if the operation failed
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        // this is used for debugging only. This would not be used in your integration, as DEBUG should be set to FALSE
+        if ($data['debug']) {
+            curl_setopt($ch, CURLOPT_HEADER, true);
+            curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        }
+
+        // [Snippet] executeSendTransaction - start
+        // send the transaction
+        $response = curl_exec($ch);
+        // [Snippet] executeSendTransaction - end
+
+        // this is used for debugging only. This would not be used in your integration, as DEBUG should be set to FALSE
+        if ($data['debug']) {
+            $requestHeaders = curl_getinfo($ch);
+            $response       = $requestHeaders["request_header"] . $response;
+        }
+
+        // assigns the cURL error to response if something went wrong so the caller can echo the error
+        if (curl_error($ch)) {
+            $response = "cURL Error: " . curl_errno($ch) . " - " . curl_error($ch);
+        }
+
+        // free cURL resources/session
         curl_close($ch);
-        return $result;
+
+        // respond with the transaction result, or a cURL error message if it failed
+        return $response;
     }
 
-
-    public static function validateMigsHostedCheckout($receipt_data, $url)
+    // [Snippet] howToConvertFormData - start
+    // Form NVP formatted request and append merchantId, apiPassword & apiUsername
+    public static function ParseRequest($data, $formData)
     {
+        $request = "";
 
-        // 验证参数
-        if (strlen($receipt_data)<20){
-            $result=array(
-                'status'=>false,
-                'message'=>'非法参数'
-            );
-            return $result;
-        }
-        // 请求验证
-        $html = static::sendHttpRequest($receipt_data, $url);
-        $data = json_decode($html,true);
+        if (count($formData) == 0)
+            return "";
 
-        // 如果是沙盒数据 则验证沙盒模式
-        if($data['status']=='21007'){
-            // 请求验证
-            $html = static::sendHttpRequest($receipt_data, 'https://sandbox.itunes.Hosted.com/verifyReceipt');
-            $data = json_decode($html,true);
-            $data['sandbox'] = '1';
+        foreach ($formData as $fieldName => $fieldValue) {
+            if (strlen($fieldValue) > 0 && $fieldName != "merchant" && $fieldName != "apiPassword" && $fieldName != "apiUsername") {
+                // replace underscores in the fieldnames with decimals
+                for ($i = 0; $i < strlen($fieldName); $i++) {
+                    if ($fieldName[$i] == '_')
+                        $fieldName[$i] = '.';
+                }
+                $request .= $fieldName . "=" . urlencode($fieldValue) . "&";
+            }
         }
 
-        if (isset($_GET['debug'])) {
-            exit(json_encode($data));
-        }
+        // [Snippet] howToSetCredentials - start
+        // For NVP, authentication details are passed in the body as Name-Value-Pairs, just like any other data field
+        $request .= "merchant=" . urlencode($data['merchantId']) . "&";
+        $request .= "apiPassword=" . urlencode($data['password']) . "&";
+        $request .= "apiUsername=" . urlencode($data['apiUsername']);
 
-        // 判断是否购买成功
-        if(intval($data['status'])===0){
-            $result=array(
-                'status'=>true,
-                'message'=>'购买成功'
-            );
-        }else{
-            $result=array(
-                'status'=>false,
-                'message'=>'购买失败 status:'.$data['status']
-            );
-        }
-        return $result;
+        // [Snippet] howToSetCredentials - end
+
+        return $request;
     }
+    // [Snippet] howToConvertFormData - end
 }

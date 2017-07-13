@@ -1,7 +1,7 @@
 {
   "name": "wjminions/omnipay-migs-hosted-checkout",
   "type": "library",
-  "description": "MigsHostedCheckout gateway for Omnipay payment processing library",
+  "description": "Migs Hosted Checkout gateway for Omnipay payment processing library",
   "keywords": [
     "migs-hosted-checkout",
     "gateway",

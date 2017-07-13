@@ -24,6 +24,6 @@ class HostedCompletePurchaseResponse extends AbstractResponse
      */
     public function isSuccessful()
     {
-        return $this->data['verify_success'];
+        return $this->data['is_paid'];
     }
 }

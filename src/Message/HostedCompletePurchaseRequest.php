@@ -11,36 +11,6 @@ use Omnipay\MigsHostedCheckout\Helper;
  */
 class HostedCompletePurchaseRequest extends AbstractHostedRequest
 {
-    protected $sandboxEndpoint = 'https://sandbox.itunes.Hosted.com/';
-
-    protected $productionEndpoint = 'https://buy.itunes.Hosted.com/';
-
-    protected $methods = array (
-        'query' => 'verifyReceipt',
-    );
-
-
-    public function getEndpoint($type)
-    {
-        if ($this->getEnvironment() == 'production') {
-            return $this->productionEndpoint . $this->methods[$type];
-        } else {
-            return $this->sandboxEndpoint . $this->methods[$type];
-        }
-    }
-
-
-    public function getEnvironment()
-    {
-        return $this->getParameter('environment');
-    }
-
-
-    public function setEnvironment($value)
-    {
-        return $this->setParameter('environment', $value);
-    }
-
     /**
      * Get the raw data array for this message. The format of this varies from gateway to
      * gateway, but will usually be either an associative array, or a SimpleXMLElement.
@@ -49,7 +19,30 @@ class HostedCompletePurchaseRequest extends AbstractHostedRequest
      */
     public function getData()
     {
-        return $this->getRequestParams();
+        $request_params = $this->getRequestParams();
+
+        $data = array (
+            'certificateVerifyPeer' => false,
+            'certificateVerifyHost' => 0,
+            'gatewayUrl' => $this->getEndpoint('pay'),
+            'merchantId' => $this->getMerchantId(),
+            'apiUsername' => $this->getApiUsername(),
+            'password' => $this->getPassword(),
+            'debug' => false,
+            'version' => $this->getVersion(),
+            'proxyServer' => '',
+            'proxyAuth' => '',
+            'proxyCurlOption' => '',
+            'proxyCurlValue' => '',
+            'certificatePath' => '',
+
+            'currency' => $this->getCurrency(),
+            'resultIndicator' => isset($request_params['resultIndicator']) ? $request_params['resultIndicator'] : false,
+            'sessionVersion' => isset($request_params['sessionVersion']) ? $request_params['sessionVersion'] : false,
+            'return_url' => $this->getReturnUrl()
+        );
+
+        return $data;
     }
 
 
@@ -85,12 +78,30 @@ class HostedCompletePurchaseRequest extends AbstractHostedRequest
      */
     public function sendData($data)
     {
-        $url = $this->getEndpoint('query');
+        $data['is_paid'] = false;
 
-        Helper::validateMigsHostedCheckout($data, $url);
+        if ($data["resultIndicator"] && $_SESSION['successIndicator']) {
+            if (strcmp($data["resultIndicator"], $_SESSION['successIndicator']) == 0)
+            {
+                $orderID = $_SESSION['orderID'];
 
+                $request_assoc_array = array("apiOperation"=>"RETRIEVE_ORDER",
+                                             "order.id"=>$orderID
+                );
 
-        $data['is_paid']        = $data['verify_success'] && ($this->getRequestParam('respCode') == '00');
+                $request = Helper::ParseRequest($data, $request_assoc_array);
+                $response = Helper::SendTransaction($data['gatewayUrl'], $data, $request);
+
+                $parsed_array = Helper::parse_from_nvp($response);
+
+                if ($parsed_array['result'] === "SUCCESS" && $parsed_array['transaction[0].authorizationResponse.responseCode'] === "00") {
+                    $data['is_paid'] = true;
+                    session_unset();
+                }
+
+                $data = array_merge($data, $parsed_array);
+            }
+        }
 
         return $this->response = new HostedCompletePurchaseResponse($this, $data);
     }

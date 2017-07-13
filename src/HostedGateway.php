@@ -18,7 +18,7 @@ class HostedGateway extends AbstractGateway
      */
     public function getName()
     {
-        return 'Hosted_Pay_Hosted';
+        return 'migs_hosted_checkout';
     }
 
 
@@ -55,6 +55,198 @@ class HostedGateway extends AbstractGateway
     public function getAmount()
     {
         return $this->getParameter('amount');
+    }
+
+
+    public function setProxyServer($value)
+    {
+        return $this->setParameter('proxyServer', $value);
+    }
+
+
+    public function getProxyServer()
+    {
+        return $this->getParameter('proxyServer');
+    }
+
+
+    public function setProxyAuth($value)
+    {
+        return $this->setParameter('proxyAuth', $value);
+    }
+
+
+    public function getProxyAuth()
+    {
+        return $this->getParameter('proxyAuth');
+    }
+
+
+    public function setProxyCurlOption($value)
+    {
+        return $this->setParameter('proxyCurlOption', $value);
+    }
+
+
+    public function getProxyCurlOption()
+    {
+        return $this->getParameter('proxyCurlOption');
+    }
+
+
+    public function setProxyCurlValue($value)
+    {
+        return $this->setParameter('proxyCurlValue', $value);
+    }
+
+
+    public function getProxyCurlValue()
+    {
+        return $this->getParameter('proxyCurlValue');
+    }
+
+
+    public function setCertificatePath($value)
+    {
+        return $this->setParameter('certificatePath', $value);
+    }
+
+
+    public function getCertificatePath()
+    {
+        return $this->getParameter('certificatePath');
+    }
+
+
+    public function setCertificateVerifyPeer($value)
+    {
+        return $this->setParameter('certificateVerifyPeer', $value);
+    }
+
+
+    public function getCertificateVerifyPeer()
+    {
+        return $this->getParameter('certificateVerifyPeer');
+    }
+
+
+    public function setCertificateVerifyHost($value)
+    {
+        return $this->setParameter('certificateVerifyHost', $value);
+    }
+
+
+    public function getCertificateVerifyHost()
+    {
+        return $this->getParameter('certificateVerifyHost');
+    }
+
+
+    public function setGatewayUrl($value)
+    {
+        return $this->setParameter('gatewayUrl', $value);
+    }
+
+
+    public function getGatewayUrl()
+    {
+        return $this->getParameter('gatewayUrl');
+    }
+
+
+    public function setDebug($value)
+    {
+        return $this->setParameter('debug', $value);
+    }
+
+
+    public function getDebug()
+    {
+        return $this->getParameter('debug');
+    }
+
+
+    public function setVersion($value)
+    {
+        return $this->setParameter('version', $value);
+    }
+
+
+    public function getVersion()
+    {
+        return $this->getParameter('version');
+    }
+
+
+    public function setMerchantId($value)
+    {
+        return $this->setParameter('merchantId', $value);
+    }
+
+
+    public function getMerchantId()
+    {
+        return $this->getParameter('merchantId');
+    }
+
+
+    public function setPassword($value)
+    {
+        return $this->setParameter('password', $value);
+    }
+
+
+    public function getPassword()
+    {
+        return $this->getParameter('password');
+    }
+
+
+    public function setApiUsername($value)
+    {
+        return $this->setParameter('apiUsername', $value);
+    }
+
+
+    public function getApiUsername()
+    {
+        return $this->getParameter('apiUsername');
+    }
+
+
+    public function setReturnUrl($value)
+    {
+        return $this->setParameter('return_url', $value);
+    }
+
+
+    public function getReturnUrl()
+    {
+        return $this->getParameter('return_url');
+    }
+
+
+    public function setCustomerReceiptEmail($value)
+    {
+        return $this->setParameter('customer_receipt_email', $value);
+    }
+
+
+    public function getCustomerReceiptEmail()
+    {
+        return $this->getParameter('customer_receipt_email');
+    }
+
+
+    public function setCheckoutMethod($value)
+    {
+        return $this->setParameter('checkout_method', $value);
+    }
+
+
+    public function getCheckoutMethod()
+    {
+        return $this->getParameter('checkout_method');
     }
 
 
