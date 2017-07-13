@@ -161,19 +161,6 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
                     unitTaxAmount: '1.00'
                 }
             },
-//            billing: {
-//                address: {
-//                    street: '300 Adelaide Street',
-//                    stateProvince: 'QLD',
-//                    city: 'Brisbane',
-//                    company: 'Mastercard Pty Ltd',
-//                    postcodeZip: '4000',
-//                    country: 'AUS'
-//                }
-//            },
-//            customer: {
-//                email: '{$customer_receipt_email}'
-//            },
             interaction: {
                 merchant: {
                     name: 'PETCIRCLE',
