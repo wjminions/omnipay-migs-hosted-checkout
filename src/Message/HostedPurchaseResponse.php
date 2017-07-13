@@ -81,7 +81,9 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
         $request_assoc_array = array("apiOperation"   => "CREATE_CHECKOUT_SESSION",
                                      "order.id"       => $data['order_id'],
                                      "order.amount"   => $order_amount,
-                                     "order.currency" => $order_currency
+                                     "order.currency" => $order_currency,
+                                     'interaction.action.bypass3DSecure' => true,
+                                     'risk.bypassMerchantRiskRules' => 'ALL'
         );
 
         //This builds the request adding in the merchant name, api user and password.
