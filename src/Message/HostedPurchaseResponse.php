@@ -73,7 +73,6 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
 
         $order_amount           = $data["amount"];
         $order_currency         = $data["currency"];
-        $customer_receipt_email =  $data["customer_receipt_email"];
 
         //Use a method to create a unique Order ID. Store this for later use in the receipt page or receipt function.
 
@@ -152,23 +151,22 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
             order: {
                 amount: "{$order_amount}",
                 currency: '{$order_currency}',
-                description: 'Hosted Checkout Test Order - Return to Merchant - PHP/JavaScript/NVP',
+                description: '{$order_amount}{$order_currency}',
                 id: '{$data['order_id']}',
                 item: {
                     brand: 'Mastercard',
-                    description: 'Hosted Checkout Test Item - Return to Merchant - PHP/JavaScript/NVP',
+                    description: '',
                     name: 'HostedCheckoutItem',
                     quantity: '1',
-                    unitPrice: '1.00',
-                    unitTaxAmount: '1.00'
+                    unitPrice: '{$order_amount}',
+                    unitTaxAmount: '{$order_amount}'
                 }
             },
             interaction: {
                 merchant: {
                     name: 'PETCIRCLE',
                     address: {
-                        line1: '300 Adelaide Street',
-                        line2: 'Brisbane Queensland 4000'
+                        line1: ''
                     },
                     logo: 'https://pet1718.com/app/images/logo.png'
                 }

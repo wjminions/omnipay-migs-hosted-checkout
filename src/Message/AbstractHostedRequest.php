@@ -235,18 +235,6 @@ abstract class AbstractHostedRequest extends AbstractRequest
     }
 
 
-    public function setCustomerReceiptEmail($value)
-    {
-        return $this->setParameter('customer_receipt_email', $value);
-    }
-
-
-    public function getCustomerReceiptEmail()
-    {
-        return $this->getParameter('customer_receipt_email');
-    }
-
-
     public function setCheckoutMethod($value)
     {
         return $this->setParameter('checkout_method', $value);
@@ -256,5 +244,17 @@ abstract class AbstractHostedRequest extends AbstractRequest
     public function getCheckoutMethod()
     {
         return $this->getParameter('checkout_method');
+    }
+
+
+    public function setRefundOrder($value)
+    {
+        return $this->setParameter('refund_order', $value);
+    }
+
+
+    public function getRefundOrder()
+    {
+        return $this->getParameter('refund_order');
     }
 }

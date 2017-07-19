@@ -6,11 +6,12 @@ use Omnipay\Common\Message\ResponseInterface;
 use Omnipay\MigsHostedCheckout\Helper;
 
 /**
- * Class HostedRefundRequest
+ * Class HostedCaptureRequest
  * @package Omnipay\MigsHostedCheckout\Message
  */
-class HostedRefundRequest extends AbstractHostedRequest
+class HostedCaptureRequest extends AbstractHostedRequest
 {
+
     /**
      * Get the raw data array for this message. The format of this varies from gateway to
      * gateway, but will usually be either an associative array, or a SimpleXMLElement.
@@ -38,7 +39,6 @@ class HostedRefundRequest extends AbstractHostedRequest
 
             //商户订单号
             'order_id'        => $this->getOrderId(),
-            'refund_order'        => $this->getRefundOrder(),
             //交易金额，单位分
             'amount'         => $this->getAmount(),
             'checkout_method' => $this->getCheckoutMethod(),
@@ -60,8 +60,7 @@ class HostedRefundRequest extends AbstractHostedRequest
             'amount',
             'currency',
             'checkout_method',
-            'return_url',
-            'refund_order'
+            'return_url'
         );
     }
 
@@ -77,9 +76,9 @@ class HostedRefundRequest extends AbstractHostedRequest
         $data['is_paid'] = false;
 
         $request_assoc_array = array(
-            "apiOperation"=>"REFUND",
+            "apiOperation"=>"CAPTURE",
             "order.id"=>$data['order_id'],
-            "transaction.id" => $data['refund_order'],
+            "transaction.id" => $data['order_id'] . '_capture',
             "transaction.amount" => $data['amount'],
             "transaction.currency" => $data['currency']
         );
@@ -89,13 +88,14 @@ class HostedRefundRequest extends AbstractHostedRequest
 
         $parsed_array = Helper::parse_from_nvp($response);
 
-        if ($parsed_array['result'] === "SUCCESS" && isset($parsed_array['order.status']) && $parsed_array['order.status'] === "REFUNDED") {
+        if ($parsed_array['result'] === "SUCCESS" && isset($parsed_array['transaction.type']) && $parsed_array['transaction.type'] === "CAPTURE") {
             unset($data);
             $data['is_paid'] = true;
+            session_unset();
         }
 
         $data = array_merge($data, $parsed_array);
 
-        return $this->response = new HostedRefundResponse($this, $data);
+        return $data;
     }
 }

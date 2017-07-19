@@ -20,30 +20,49 @@ class HostedQueryRequest extends AbstractHostedRequest
      */
     public function getData()
     {
-        $this->validate('certPath', 'certPassword', 'orderId', 'txnTime', 'txnAmt');
+        $this->validateData();
 
-        $data = array(
-            'version'     => $this->getVersion(),
-            'encoding'    => $this->getEncoding(),
-            'certId'      => $this->getCertId(),
-            'signMethod'  => $this->getSignMethod(),
-            'txnType'     => '00',
-            'txnSubType'  => '00',
-            'bizType'     => $this->getBizType(),
-            'accessType'  => $this->getAccessType(),
-            'channelType' => $this->getChannelType(),
-            'orderId'     => $this->getOrderId(),
-            'merId'       => $this->getMerId(),
-            'txnTime'     => $this->getTxnTime(),
+        $data = array (
+            'certificateVerifyPeer' => false,
+            'certificateVerifyHost' => 0,
+            'gatewayUrl' => $this->getEndpoint('pay'),
+            'merchantId' => $this->getMerchantId(),
+            'apiUsername' => $this->getApiUsername(),
+            'password' => $this->getPassword(),
+            'debug' => false,
+            'version' => $this->getVersion(),
+            'proxyServer' => '',
+            'proxyAuth' => '',
+            'proxyCurlOption' => '',
+            'proxyCurlValue' => '',
+            'certificatePath' => '',
+
+            //商户订单号
+            'order_id'        => $this->getOrderId(),
+            //交易金额，单位分
+            'amount'         => $this->getAmount(),
+            'checkout_method' => $this->getCheckoutMethod(),
+            'currency' => $this->getCurrency(),
+            'return_url' => $this->getReturnUrl()
         );
-
-        $data = Helper::filterData($data);
-
-        $data['signature'] = Helper::getParamsSignatureWithRSA($data, $this->getCertPath(), $this->getCertPassword());
 
         return $data;
     }
 
+    private function validateData()
+    {
+        $this->validate(
+            'merchantId',
+            'apiUsername',
+            'password',
+            'version',
+            'order_id',
+            'amount',
+            'currency',
+            'checkout_method',
+            'return_url'
+        );
+    }
 
     /**
      * Send the request with specified data
@@ -54,9 +73,24 @@ class HostedQueryRequest extends AbstractHostedRequest
      */
     public function sendData($data)
     {
+        $data['is_paid'] = false;
 
-        $data = $this->httpRequest('query', $data);
+        $request_assoc_array = array(
+            "apiOperation"=>"RETRIEVE_ORDER",
+            "order.id"=>$data['order_id']
+        );
 
-        return $this->response = new HostedResponse($this, $data);
+        $request = Helper::ParseRequest($data, $request_assoc_array);
+        $response = Helper::SendTransaction($data['gatewayUrl'], $data, $request);
+
+        $parsed_array = Helper::parse_from_nvp($response);
+
+        if ($parsed_array['result'] === "SUCCESS" && $parsed_array['transaction[0].authorizationResponse.responseCode'] === "00") {
+            $data['is_paid'] = true;
+        }
+
+        $data = array_merge($data, $parsed_array);
+
+        return $data;
     }
 }

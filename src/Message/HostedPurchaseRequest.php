@@ -41,7 +41,6 @@ class HostedPurchaseRequest extends AbstractHostedRequest
             'order_id'        => $this->getOrderId(),
             //交易金额，单位分
             'amount'         => $this->getAmount(),
-            'customer_receipt_email' => $this->getCustomerReceiptEmail(),
             'checkout_method' => $this->getCheckoutMethod(),
             'currency' => $this->getCurrency(),
             'return_url' => $this->getReturnUrl()
@@ -60,7 +59,6 @@ class HostedPurchaseRequest extends AbstractHostedRequest
             'version',
             'order_id',
             'amount',
-            'customer_receipt_email',
             'currency',
             'checkout_method',
             'return_url'

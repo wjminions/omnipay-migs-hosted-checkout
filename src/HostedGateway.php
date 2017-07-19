@@ -226,18 +226,6 @@ class HostedGateway extends AbstractGateway
     }
 
 
-    public function setCustomerReceiptEmail($value)
-    {
-        return $this->setParameter('customer_receipt_email', $value);
-    }
-
-
-    public function getCustomerReceiptEmail()
-    {
-        return $this->getParameter('customer_receipt_email');
-    }
-
-
     public function setCheckoutMethod($value)
     {
         return $this->setParameter('checkout_method', $value);
@@ -247,6 +235,18 @@ class HostedGateway extends AbstractGateway
     public function getCheckoutMethod()
     {
         return $this->getParameter('checkout_method');
+    }
+
+
+    public function setRefundOrder($value)
+    {
+        return $this->setParameter('refund_order', $value);
+    }
+
+
+    public function getRefundOrder()
+    {
+        return $this->getParameter('refund_order');
     }
 
 
@@ -271,5 +271,17 @@ class HostedGateway extends AbstractGateway
     public function refund(array $parameters = array())
     {
         return $this->createRequest('\Omnipay\MigsHostedCheckout\Message\HostedRefundRequest', $parameters);
+    }
+
+
+    public function void(array $parameters = array())
+    {
+        return $this->createRequest('\Omnipay\MigsHostedCheckout\Message\HostedVoidRequest', $parameters);
+    }
+
+
+    public function capture(array $parameters = array())
+    {
+        return $this->createRequest('\Omnipay\MigsHostedCheckout\Message\HostedCaptureRequest', $parameters);
     }
 }

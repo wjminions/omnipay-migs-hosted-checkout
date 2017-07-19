@@ -39,6 +39,7 @@ class HostedCompletePurchaseRequest extends AbstractHostedRequest
             'currency' => $this->getCurrency(),
             'resultIndicator' => isset($request_params['resultIndicator']) ? $request_params['resultIndicator'] : false,
             'sessionVersion' => isset($request_params['sessionVersion']) ? $request_params['sessionVersion'] : false,
+            'amount' => $request_params['amount'],
             'return_url' => $this->getReturnUrl()
         );
 
@@ -85,8 +86,12 @@ class HostedCompletePurchaseRequest extends AbstractHostedRequest
             {
                 $orderID = $_SESSION['orderID'];
 
-                $request_assoc_array = array("apiOperation"=>"RETRIEVE_ORDER",
-                                             "order.id"=>$orderID
+                $request_assoc_array = array(
+                    "apiOperation"=>"CAPTURE",
+                    "order.id"=>$orderID,
+                    "transaction.id" => $orderID . '_capture',
+                    "transaction.amount" => $data['amount'],
+                    "transaction.currency" => $data['currency']
                 );
 
                 $request = Helper::ParseRequest($data, $request_assoc_array);
@@ -94,14 +99,16 @@ class HostedCompletePurchaseRequest extends AbstractHostedRequest
 
                 $parsed_array = Helper::parse_from_nvp($response);
 
-                if ($parsed_array['result'] === "SUCCESS" && $parsed_array['transaction[0].authorizationResponse.responseCode'] === "00") {
+                if ($parsed_array['result'] === "SUCCESS" && isset($parsed_array['transaction.type']) && $parsed_array['transaction.type'] === "CAPTURE") {
+                    unset($data);
                     $data['is_paid'] = true;
-                    session_unset();
                 }
 
                 $data = array_merge($data, $parsed_array);
             }
         }
+
+        session_unset();
 
         return $this->response = new HostedCompletePurchaseResponse($this, $data);
     }

@@ -6,10 +6,10 @@ use Omnipay\Common\Message\ResponseInterface;
 use Omnipay\MigsHostedCheckout\Helper;
 
 /**
- * Class HostedRefundRequest
+ * Class HostedVoidRequest
  * @package Omnipay\MigsHostedCheckout\Message
  */
-class HostedRefundRequest extends AbstractHostedRequest
+class HostedVoidRequest extends AbstractHostedRequest
 {
     /**
      * Get the raw data array for this message. The format of this varies from gateway to
@@ -77,11 +77,10 @@ class HostedRefundRequest extends AbstractHostedRequest
         $data['is_paid'] = false;
 
         $request_assoc_array = array(
-            "apiOperation"=>"REFUND",
+            "apiOperation"=>"VOID",
             "order.id"=>$data['order_id'],
             "transaction.id" => $data['refund_order'],
-            "transaction.amount" => $data['amount'],
-            "transaction.currency" => $data['currency']
+            "transaction.targetTransactionId" => $data['order_id'] . '_capture'
         );
 
         $request = Helper::ParseRequest($data, $request_assoc_array);
@@ -89,7 +88,7 @@ class HostedRefundRequest extends AbstractHostedRequest
 
         $parsed_array = Helper::parse_from_nvp($response);
 
-        if ($parsed_array['result'] === "SUCCESS" && isset($parsed_array['order.status']) && $parsed_array['order.status'] === "REFUNDED") {
+        if ($parsed_array['result'] === "SUCCESS" && isset($parsed_array['authorizationResponse.responseCode']) && $parsed_array['authorizationResponse.responseCode'] === "00") {
             unset($data);
             $data['is_paid'] = true;
         }
