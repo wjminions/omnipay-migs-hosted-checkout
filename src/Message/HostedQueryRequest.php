@@ -85,7 +85,7 @@ class HostedQueryRequest extends AbstractHostedRequest
 
         $parsed_array = Helper::parse_from_nvp($response);
 
-        if ($parsed_array['result'] === "SUCCESS" && $parsed_array['transaction[0].authorizationResponse.responseCode'] === "00") {
+        if ($parsed_array['result'] === "SUCCESS" && $parsed_array['status'] === "CAPTURED" && $parsed_array['transaction[0].authorizationResponse.responseCode'] === "00") {
             $data['is_paid'] = true;
         }
 
