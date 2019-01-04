@@ -250,6 +250,30 @@ class HostedGateway extends AbstractGateway
     }
 
 
+    public function setMerchantLogo($value)
+    {
+        return $this->setParameter('merchant_logo', $value);
+    }
+
+
+    public function getMerchantLogo()
+    {
+        return $this->getParameter('merchant_logo');
+    }
+
+
+    public function setMerchantName($value)
+    {
+        return $this->setParameter('merchant_name', $value);
+    }
+
+
+    public function getMerchantName()
+    {
+        return $this->getParameter('merchant_name');
+    }
+
+
     public function purchase(array $parameters = array())
     {
         return $this->createRequest('\Omnipay\MigsHostedCheckout\Message\HostedPurchaseRequest', $parameters);

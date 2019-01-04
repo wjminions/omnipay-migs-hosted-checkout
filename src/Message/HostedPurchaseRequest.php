@@ -43,7 +43,9 @@ class HostedPurchaseRequest extends AbstractHostedRequest
             'amount'         => $this->getAmount(),
             'checkout_method' => $this->getCheckoutMethod(),
             'currency' => $this->getCurrency(),
-            'return_url' => $this->getReturnUrl()
+            'return_url' => $this->getReturnUrl(),
+            'merchant_name' => $this->getMerchantName(),
+            'merchant_logo' => $this->getMerchantLogo()
         );
 
         return $data;
@@ -61,7 +63,9 @@ class HostedPurchaseRequest extends AbstractHostedRequest
             'amount',
             'currency',
             'checkout_method',
-            'return_url'
+            'return_url',
+            'merchant_name',
+            'merchant_logo'
         );
     }
 

@@ -257,4 +257,28 @@ abstract class AbstractHostedRequest extends AbstractRequest
     {
         return $this->getParameter('refund_order');
     }
+
+
+    public function setMerchantLogo($value)
+    {
+        return $this->setParameter('merchant_logo', $value);
+    }
+
+
+    public function getMerchantLogo()
+    {
+        return $this->getParameter('merchant_logo');
+    }
+
+
+    public function setMerchantName($value)
+    {
+        return $this->setParameter('merchant_name', $value);
+    }
+
+
+    public function getMerchantName()
+    {
+        return $this->getParameter('merchant_name');
+    }
 }

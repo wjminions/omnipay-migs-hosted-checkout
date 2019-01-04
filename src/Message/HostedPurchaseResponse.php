@@ -164,11 +164,11 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
             },
             interaction: {
                 merchant: {
-                    name: 'PETCIRCLE',
+                    name: '{$data['merchant_name']}',
                     address: {
                         line1: ''
                     },
-                    logo: 'https://pet1718.com/app/images/logo.png'
+                    logo: '{$data['merchant_logo']}'
                 }
             },
             session: {
