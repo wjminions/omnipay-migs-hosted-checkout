@@ -82,8 +82,7 @@ class HostedCompletePurchaseRequest extends AbstractHostedRequest
         $data['is_paid'] = false;
 
         if ($data["resultIndicator"] && $_SESSION['successIndicator']) {
-            if (strcmp($data["resultIndicator"], $_SESSION['successIndicator']) == 0)
-            {
+            if (strcmp($data["resultIndicator"], $_SESSION['successIndicator']) == 0) {
                 $orderID = $_SESSION['orderID'];
 
                 $request_assoc_array = array(
@@ -97,10 +96,20 @@ class HostedCompletePurchaseRequest extends AbstractHostedRequest
                 $request = Helper::ParseRequest($data, $request_assoc_array);
                 $response = Helper::SendTransaction($data['gatewayUrl'], $data, $request);
 
+                $request_assoc_array = array(
+                    "apiOperation"=>"RETRIEVE_ORDER",
+                    "order.id"=>$orderID
+                );
+
+                $request = Helper::ParseRequest($data, $request_assoc_array);
+                $response = Helper::SendTransaction($data['gatewayUrl'], $data, $request);
+
                 $parsed_array = Helper::parse_from_nvp($response);
 
-                if ($parsed_array['result'] === "SUCCESS" && isset($parsed_array['transaction.type']) && $parsed_array['transaction.type'] === "CAPTURE") {
-                    unset($data);
+                if ($parsed_array['result'] === "SUCCESS"
+                    && $parsed_array['status'] === "CAPTURED"
+                    && $parsed_array['totalCapturedAmount'] === $data['amount']
+                    && $parsed_array['totalRefundedAmount'] === "0.00") {
                     $data['is_paid'] = true;
                 }
 
@@ -108,7 +117,9 @@ class HostedCompletePurchaseRequest extends AbstractHostedRequest
             }
         }
 
-        session_unset();
+        unset($_SESSION['orderID']);
+        unset($_SESSION['successIndicator']);
+        unset($_SESSION['sessionId']);
 
         return $this->response = new HostedCompletePurchaseResponse($this, $data);
     }

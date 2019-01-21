@@ -53,11 +53,23 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
     {
         $data = $this->data;
 
-        if (isset($_SESSION['successIndicator']) && isset( $_SESSION['orderID'])) {
+        if (isset($_SESSION['successIndicator']) && isset($_SESSION['orderID'])) {
             $orderID = $_SESSION['orderID'];
 
-            $request_assoc_array = array("apiOperation"=>"RETRIEVE_ORDER",
-                                         "order.id"=>$orderID
+            $request_assoc_array = array(
+                "apiOperation"=>"CAPTURE",
+                "order.id"=>$orderID,
+                "transaction.id" => $orderID . '_capture',
+                "transaction.amount" => $data['amount'],
+                "transaction.currency" => $data['currency']
+            );
+
+            $request = Helper::ParseRequest($data, $request_assoc_array);
+            $response = Helper::SendTransaction($data['gatewayUrl'], $data, $request);
+
+            $request_assoc_array = array(
+                "apiOperation"=>"RETRIEVE_ORDER",
+                "order.id"=>$orderID
             );
 
             $request = Helper::ParseRequest($data, $request_assoc_array);
@@ -65,7 +77,9 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
 
             $parsed_array = Helper::parse_from_nvp($response);
 
-            if ($parsed_array['result'] === "SUCCESS" && $parsed_array['status'] === "AUTHORIZED" && $parsed_array['transaction[0].authorizationResponse.responseCode'] === "00") {
+            if ($parsed_array['result'] === "SUCCESS"
+                && $parsed_array['status'] === "CAPTURED"
+                && $parsed_array['totalRefundedAmount'] === "0.00") {
                 header("Location: " . $data['return_url'] . "?resultIndicator=" . $_SESSION['successIndicator']);
                 die('Already paid');
             }
@@ -76,37 +90,42 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
 
         //Use a method to create a unique Order ID. Store this for later use in the receipt page or receipt function.
 
-        //Form the array to obtain the checkout session ID.
-        $request_assoc_array = array("apiOperation"   => "CREATE_CHECKOUT_SESSION",
-                                     "order.id"       => $data['order_id'],
-                                     "order.amount"   => $order_amount,
-                                     "order.currency" => $order_currency,
-                                     'interaction.action.bypass3DSecure' => true,
-                                     'risk.bypassMerchantRiskRules' => 'ALL'
-        );
+        if (! isset($_SESSION['successIndicator']) || ! isset($_SESSION['orderID'])) {
+            //Form the array to obtain the checkout session ID.
+            $request_assoc_array = array("apiOperation"   => "CREATE_CHECKOUT_SESSION",
+                                         "order.id"       => $data['order_id'],
+                                         "order.amount"   => $order_amount,
+                                         "order.currency" => $order_currency,
+                                         'interaction.action.bypass3DSecure' => true,
+                                         'risk.bypassMerchantRiskRules' => 'ALL'
+            );
 
-        //This builds the request adding in the merchant name, api user and password.
-        $request = Helper::ParseRequest($data, $request_assoc_array);
+            //This builds the request adding in the merchant name, api user and password.
+            $request = Helper::ParseRequest($data, $request_assoc_array);
 
-        //Submit the transaction request to the payment server
-        $response = Helper::SendTransaction($data['gatewayUrl'], $data, $request);
+            //Submit the transaction request to the payment server
+            $response = Helper::SendTransaction($data['gatewayUrl'], $data, $request);
 
-        //Parse the response
-        $parsed_array = Helper::parse_from_nvp($response);
+            //Parse the response
+            $parsed_array = Helper::parse_from_nvp($response);
 
-        if (isset($parsed_array['error.cause'])) {
-            die($parsed_array['error.explanation']);
+            if (isset($parsed_array['error.cause'])) {
+                die($parsed_array['error.explanation']);
+            }
+
+            //Store the successIndicator for later use in the receipt page or receipt function.
+            $successIndicator = $parsed_array['successIndicator'];
+
+            //The session ID is passed to the Checkout.configure() function below.
+            $sessionId = $parsed_array['session.id'];
+
+            //Store the variables in the session, or a database could be used for example
+            $_SESSION['successIndicator'] = $successIndicator;
+            $_SESSION['orderID']          = $data['order_id'];
+            $_SESSION['sessionId']        = $sessionId;
         }
 
-        //Store the successIndicator for later use in the receipt page or receipt function.
-        $successIndicator = $parsed_array['successIndicator'];
-
-        //The session ID is passed to the Checkout.configure() function below.
-        $sessionId = $parsed_array['session.id'];
-
-        //Store the variables in the session, or a database could be used for example
-        $_SESSION['successIndicator'] = $successIndicator;
-        $_SESSION['orderID']          = $data['order_id'];
+        $sessionId = $_SESSION['sessionId'];
 
         $merchantID = $data['merchantId'];
 

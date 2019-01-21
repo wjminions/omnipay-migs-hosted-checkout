@@ -92,6 +92,10 @@ class HostedQueryRequest extends AbstractHostedRequest
             $data['is_paid'] = true;
         }
 
+        unset($_SESSION['orderID']);
+        unset($_SESSION['successIndicator']);
+        unset($_SESSION['sessionId']);
+
         $data = array_merge($data, $parsed_array);
 
         return $data;

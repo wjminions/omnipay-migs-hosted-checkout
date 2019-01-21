@@ -91,8 +91,11 @@ class HostedCaptureRequest extends AbstractHostedRequest
         if ($parsed_array['result'] === "SUCCESS" && isset($parsed_array['transaction.type']) && $parsed_array['transaction.type'] === "CAPTURE") {
             unset($data);
             $data['is_paid'] = true;
-            session_unset();
         }
+
+        unset($_SESSION['orderID']);
+        unset($_SESSION['successIndicator']);
+        unset($_SESSION['sessionId']);
 
         $data = array_merge($data, $parsed_array);
 
