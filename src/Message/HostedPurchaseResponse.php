@@ -83,6 +83,10 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
                 header("Location: " . $data['return_url'] . "?resultIndicator=" . $_SESSION['successIndicator']);
                 die('Already paid');
             }
+
+            unset($_SESSION['orderID']);
+            unset($_SESSION['successIndicator']);
+            unset($_SESSION['sessionId']);
         }
 
         $order_amount           = $data["amount"];
