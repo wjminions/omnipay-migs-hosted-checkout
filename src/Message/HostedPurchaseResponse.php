@@ -192,7 +192,8 @@ class HostedPurchaseResponse extends AbstractResponse implements RedirectRespons
                         line1: ''
                     },
                     logo: '{$data['merchant_logo']}'
-                }
+                },
+                locale: 'zh_HK'
             },
             session: {
                 id: '{$sessionId}'
